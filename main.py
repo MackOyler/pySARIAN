@@ -34,7 +34,54 @@ def draw_text(surface, text, x, y, font, color=(255,255,255), center=True):
 # -------------------------
 # Title Scene
 # -------------------------
+class TitleScene:
+    def __init__(self):
+        self.background = None
+        self.planet = None
+        self.play_button = None
+        self.font = None
+        self.title_text = "SARIAN"
+        # Button rect for detecting clicks
+        self.play_button_rect = None
 
+    def load_resources(self):
+        self.background = load_image("background.png")
+        self.planet = load_image("planet.png")
+        self.play_button = load_image("play_button.png")
+        # Use a font included with pygame or a TTF file you have:
+        self.font = pygame.font.SysFont("Arial", 48)
+
+    def start(self):
+        pass  # Any initialization logic goes here
+
+    def handle_events(self, event, game):
+        """Handle events (like mouse clicks) for the Title Scene."""
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = event.pos
+            if self.play_button_rect and self.play_button_rect.collidepoint(mouse_x, mouse_y):
+                # Switch to main scene
+                game.change_scene(SCENE_MAIN)
+
+    def update(self, dt, game):
+        """Update logic for Title Scene. dt is the time delta."""
+        pass
+
+    def draw(self, surface):
+        """Draw everything for the Title Scene."""
+        # Draw background
+        surface.blit(pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0,0))
+        # Planet in the center
+        planet_scaled = pygame.transform.scale(self.planet, (int(self.planet.get_width()*0.6), 
+                                                             int(self.planet.get_height()*0.6)))
+        planet_rect = planet_scaled.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2))
+        surface.blit(planet_scaled, planet_rect)
+        # Title text
+        draw_text(surface, self.title_text, SCREEN_WIDTH//2, 150, self.font, color=(255,255,255), center=True)
+        # Play button
+        play_scaled = pygame.transform.scale(self.play_button, (100, 100))  # adjust as needed
+        self.play_button_rect = play_scaled.get_rect(center=(SCREEN_WIDTH//2, 400))
+        surface.blit(play_scaled, self.play_button_rect)
+        
 # -------------------------
 # Particles / dust effect
 # -------------------------
