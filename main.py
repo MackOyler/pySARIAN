@@ -119,7 +119,7 @@ class Asteroid(pygame.sprite.Sprite):
         if (self.rect.x < -200 or self.rect.x > SCREEN_WIDTH+200 or 
             self.rect.y < -200 or self.rect.y > SCREEN_HEIGHT+200):
             self.kill()
-            
+
 # -------------------------
 # Shield + Planet
 # -------------------------
@@ -131,6 +131,44 @@ class Asteroid(pygame.sprite.Sprite):
 # -------------------------
 # Main Game Class
 # -------------------------
+class Game:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption("Sarian in Pygame")
+        self.clock = pygame.time.Clock()
+
+        # Create scenes
+        self.scenes = {
+            SCENE_TITLE: TitleScene(),
+            SCENE_MAIN: MainScene()
+        }
+        self.current_scene_key = SCENE_TITLE
+        self.current_scene = self.scenes[self.current_scene_key]
+
+        # Load resources for all scenes
+        for scene in self.scenes.values():
+            scene.load_resources()
+
+        # Start the first scene
+        self.current_scene.start()
+
+    def change_scene(self, new_scene_key):
+        self.current_scene_key = new_scene_key
+        self.current_scene = self.scenes[new_scene_key]
+        self.current_scene.start()
+
+    def run(self):
+        while True:
+            dt = self.clock.tick(FPS)  # dt in ms since last frame
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                self.current_scene.handle_events(event, self)
+            self.current_scene.update(dt, self)
+            self.current_scene.draw(self.screen)
+            pygame.display.flip()
 
 # -------------------------
 # Entry Point
