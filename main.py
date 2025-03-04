@@ -225,16 +225,16 @@ class MainScene:
         self.pause_button = None
         self.dust_image = None
 
-        self.score = 0
-        self.high_score = 0
-        self.lives = 3
+        self.score = 0         # Current score (displayed as 1UP)
+        self.high_score = 0    # Highest score for the session
+        self.lives = 3         # Internal lives count (not displayed)
         self.is_paused = False
 
         self.planet_center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20)
 
         self.asteroids = pygame.sprite.Group()
         self.dust_particles = pygame.sprite.Group()
-        self.plus_ones = pygame.sprite.Group()  # New group for "+1" popups
+        self.plus_ones = pygame.sprite.Group()  # Group for "+1" popups
 
         self.spawn_event = 0
         self.spawn_delay = 1000  # ms
@@ -309,7 +309,8 @@ class MainScene:
         self.plus_ones.draw(surface)
 
         draw_text(surface, f"HIGH SCORE: {self.high_score}", SCREEN_WIDTH // 2, 20, self.font_small, (255, 0, 0))
-        draw_text(surface, f"1UP: {self.lives}", SCREEN_WIDTH - 80, 20, self.font_small, (255, 255, 255), center=False)
+        # "1UP" now shows the current score
+        draw_text(surface, f"1UP: {self.score}", SCREEN_WIDTH - 80, 20, self.font_small, (255, 255, 255), center=False)
 
         pause_scaled = pygame.transform.scale(self.pause_button, (50, 50))
         self.pause_btn_rect = pause_scaled.get_rect(topleft=(20, 20))
