@@ -311,11 +311,11 @@ class MainScene:
         # Define fixed orbits (radius, starting angle)
         # You can adjust these values as needed
         fixed_orbits = [
-            (150,   0),   # radius=150, start angle=0
-            (200,  72),   # radius=200, start angle=72
-            (250, 144),   # radius=250, start angle=144
-            (300, 216),   # radius=300, start angle=216
-            (350, 288)    # radius=350, start angle=288
+            (190,   0),   # radius=150, start angle=0
+            (250,  72),   # radius=200, start angle=72
+            (320, 144),   # radius=250, start angle=144
+            (380, 216),   # radius=300, start angle=216
+            (450, 288)    # radius=350, start angle=288
         ]
 
         # Create each moon with a consistent orbit speed (e.g., 0.1 degrees/frame)
@@ -323,7 +323,7 @@ class MainScene:
         orbit_speed = 0.1
         for i, img in enumerate(self.moon_images):
             radius, angle = fixed_orbits[i]
-            scale = random.uniform(0.06, 0.1)
+            scale = random.uniform(0.05, 0.09)
             moon = Moon(
                 img,
                 self.planet_center,
