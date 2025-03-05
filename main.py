@@ -37,7 +37,6 @@ def draw_text(surface, text, x, y, font, color=(255,255,255), center=True):
 class Moon(pygame.sprite.Sprite):
     def __init__(self, image, planet_center, orbit_radius, orbit_speed, initial_angle, scale):
         super().__init__()
-        # Scale the moon image by 'scale'
         self.original_image = pygame.transform.scale(
             image, (int(image.get_width() * scale), int(image.get_height() * scale))
         )
@@ -57,7 +56,6 @@ class Moon(pygame.sprite.Sprite):
         )
     
     def update(self):
-        # Increment angle for orbit; wrap at 360
         self.angle = (self.angle + self.orbit_speed) % 360
         self.update_position()
 
@@ -181,29 +179,29 @@ class Asteroid(pygame.sprite.Sprite):
 # Shield + Planet
 # -------------------------
 class Shield:
+    """
+    A shield that uses a single bounding circle for collision,
+    matching the scaled sprite as closely as possible.
+    """
     def __init__(self, image, planet_center, radius=150, angle=100):
         self.image_original = image
         self.image = self.image_original.copy()
         self.rect = self.image.get_rect()
         self.center = planet_center
-        self.radius = radius
+        self.radius = radius  # Distance from planet center
         self.angle_deg = angle
 
-        w = self.rect.width
-        h = self.rect.height
-        circle_r = (w * 0.4)
-        self.local_offsets = [
-            (-w * 0.25, 0),
-            ( w * 0.25, 0),
-            ( 0,  h * 0.25)
-        ]
-        self.circle_radius = circle_r
-
+        # Scale the shield
         self.scale = 0.07
         new_w = int(self.image.get_width() * self.scale)
         new_h = int(self.image.get_height() * self.scale)
         self.image = pygame.transform.scale(self.image, (new_w, new_h))
         self.rect = self.image.get_rect()
+
+        # Single bounding circle that approximates the shield's shape
+        # Adjust shield_collision_factor if collisions are still off
+        shield_collision_factor = 0.47  # tweak to match sprite edges
+        self.collision_radius = (new_w / 2) * shield_collision_factor
 
     def rotate_left(self, speed):
         self.angle_deg -= speed
@@ -228,19 +226,11 @@ class Shield:
         surface.blit(rotated_image, rect)
 
     def get_collision_circles(self):
-        circles = []
-        rad_angle = math.radians(self.angle_deg + 90)
-        shield_center = self.get_position()
-        cos_theta = math.cos(rad_angle)
-        sin_theta = math.sin(rad_angle)
-        for offset in self.local_offsets:
-            local_x, local_y = offset
-            world_x = local_x * cos_theta - local_y * sin_theta
-            world_y = local_x * sin_theta + local_y * cos_theta
-            cx = shield_center[0] + world_x * self.scale
-            cy = shield_center[1] + world_y * self.scale
-            circles.append((cx, cy, self.circle_radius * self.scale))
-        return circles
+        """
+        Return a single circle: (center_x, center_y, radius)
+        """
+        cx, cy = self.get_position()
+        return [(cx, cy, self.collision_radius)]
 
 # -------------------------
 # Main Scene
@@ -254,17 +244,17 @@ class MainScene:
         self.pause_button = None
         self.dust_image = None
 
-        self.score = 0         # Current score (displayed as 1UP)
-        self.high_score = 0    # Highest score for the session
-        self.lives = 3         # Internal lives count (not displayed)
+        self.score = 0
+        self.high_score = 0
+        self.lives = 3
         self.is_paused = False
 
         self.planet_center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20)
 
         self.asteroids = pygame.sprite.Group()
         self.dust_particles = pygame.sprite.Group()
-        self.plus_ones = pygame.sprite.Group()  # Group for "+1" popups
-        self.moons = pygame.sprite.Group()      # Group for decorative moons
+        self.plus_ones = pygame.sprite.Group()
+        self.moons = pygame.sprite.Group()
 
         self.spawn_event = 0
         self.spawn_delay = 1000  # ms
@@ -282,7 +272,7 @@ class MainScene:
         self.font_small = pygame.font.SysFont("Arial", 20)
         self.font_big = pygame.font.SysFont("Arial", 40)
 
-        # Load the 5 moon images
+        # (Optional) If you have multiple moon images
         self.moon_images = [
             load_image("moon1.png"),
             load_image("moon2.png"),
@@ -297,10 +287,12 @@ class MainScene:
         self.is_paused = False
 
         self.planet_scaled = pygame.transform.scale(
-            self.planet,
-            (int(self.planet.get_width() * 0.25), int(self.planet.get_height() * 0.25))
+            self.planet, (int(self.planet.get_width() * 0.25),
+                          int(self.planet.get_height() * 0.25))
         )
         self.planet_rect = self.planet_scaled.get_rect(center=self.planet_center)
+
+        # Use the new single-circle shield
         self.shield = Shield(self.shield_image, self.planet_center, radius=150, angle=100)
 
         self.asteroids.empty()
@@ -308,30 +300,19 @@ class MainScene:
         self.plus_ones.empty()
         self.moons.empty()
 
-        # Define fixed orbits (radius, starting angle)
-        # You can adjust these values as needed
+        # Example: define fixed orbits for your 5 moons
         fixed_orbits = [
-            (190,   0),   # radius=150, start angle=0
-            (250,  72),   # radius=200, start angle=72
-            (320, 144),   # radius=250, start angle=144
-            (380, 216),   # radius=300, start angle=216
-            (450, 288)    # radius=350, start angle=288
+            (190,   0),
+            (250,  72),
+            (320, 144),
+            (380, 216),
+            (450, 288)
         ]
-
-        # Create each moon with a consistent orbit speed (e.g., 0.1 degrees/frame)
-        # Keep scale random between 0.06 and 0.1, as you requested
         orbit_speed = 0.1
         for i, img in enumerate(self.moon_images):
             radius, angle = fixed_orbits[i]
             scale = random.uniform(0.05, 0.09)
-            moon = Moon(
-                img,
-                self.planet_center,
-                orbit_radius=radius,
-                orbit_speed=orbit_speed,
-                initial_angle=angle,
-                scale=scale
-            )
+            moon = Moon(img, self.planet_center, radius, orbit_speed, angle, scale)
             self.moons.add(moon)
 
         self.spawn_event = pygame.time.get_ticks()
@@ -364,27 +345,23 @@ class MainScene:
         self.dust_particles.update()
         self.plus_ones.update()
         self.moons.update()
+
         self.check_shield_collisions()
         self.check_planet_collisions()
 
     def draw(self, surface):
         surface.blit(pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
-        # Draw moons behind the planet
         self.moons.draw(surface)
-
-        # Draw planet and shield
         surface.blit(self.planet_scaled, self.planet_rect)
         self.shield.draw(surface)
 
-        # Draw asteroids, dust, plus-one
         self.asteroids.draw(surface)
         self.dust_particles.draw(surface)
         self.plus_ones.draw(surface)
 
-        # UI: High Score, Current Score, Pause Button
-        draw_text(surface, f"HIGH SCORE: {self.high_score}", SCREEN_WIDTH // 2, 20, 
+        draw_text(surface, f"HIGH SCORE: {self.high_score}", SCREEN_WIDTH // 2, 20,
                   self.font_small, (255, 0, 0))
-        draw_text(surface, f"1UP: {self.score}", SCREEN_WIDTH - 80, 20, 
+        draw_text(surface, f"1UP: {self.score}", SCREEN_WIDTH - 80, 20,
                   self.font_small, (255, 255, 255), center=False)
 
         pause_scaled = pygame.transform.scale(self.pause_button, (50, 50))
@@ -392,7 +369,7 @@ class MainScene:
         surface.blit(pause_scaled, self.pause_btn_rect)
 
         if self.is_paused:
-            draw_text(surface, "PAUSED", SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 
+            draw_text(surface, "PAUSED", SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2,
                       self.font_big, (255, 255, 0))
 
     def spawn_asteroid(self):
@@ -411,29 +388,28 @@ class MainScene:
         self.asteroids.add(asteroid)
 
     def check_shield_collisions(self):
-        circles = self.shield.get_collision_circles()
+        # We only have one circle now
+        circles = self.shield.get_collision_circles()  # returns [(cx, cy, r)]
         for asteroid in self.asteroids:
             for (cx, cy, cr) in circles:
                 dx = asteroid.rect.centerx - cx
                 dy = asteroid.rect.centery - cy
-                dist_sq = dx*dx + dy*dy
+                dist_sq = dx * dx + dy * dy
                 radius_sum = asteroid.radius + cr
                 if dist_sq <= (radius_sum * radius_sum):
                     self.handle_asteroid_blocked(asteroid)
                     break
 
     def handle_asteroid_blocked(self, asteroid):
-        # Create a dust particle effect
         dust = DustParticle(
-            asteroid.rect.centerx, 
+            asteroid.rect.centerx,
             asteroid.rect.centery,
-            pygame.transform.scale(self.dust_image, (32, 32)), 
+            pygame.transform.scale(self.dust_image, (32, 32)),
             lifetime=30
         )
         self.dust_particles.add(dust)
 
-        # Create a "+1" popup at the collision point
-        plus_one = PlusOne(asteroid.rect.centerx, asteroid.rect.centery, 
+        plus_one = PlusOne(asteroid.rect.centerx, asteroid.rect.centery,
                            self.font_small, lifetime=30)
         self.plus_ones.add(plus_one)
 
