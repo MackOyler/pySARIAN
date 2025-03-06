@@ -69,20 +69,17 @@ class TitleScene:
         self.play_button = None
         self.font = None
         self.play_button_rect = None
-
-        self.title_image = None  # We'll load and scale this in load_resources()
+        self.title_image = None  # Title sprite
 
     def load_resources(self):
         self.background = load_image("background.png")
         self.planet = load_image("planet.png")
         self.play_button = load_image("play_button.png")
         self.font = pygame.font.SysFont("Arial", 48)
-
-        # Load your custom "SARIAN" title sprite
+        
+        # Load and scale the title sprite (title.png)
         self.title_image = load_image("title.png")
-
-        # --- Scale the title image ---
-        desired_width = 350
+        desired_width = 350  # Adjust this value to control the title image size
         original_width, original_height = self.title_image.get_size()
         aspect_ratio = original_height / original_width
         scaled_height = int(desired_width * aspect_ratio)
@@ -101,20 +98,20 @@ class TitleScene:
         pass
 
     def draw(self, surface):
-        # Draw the background
+        # Draw background
         surface.blit(pygame.transform.scale(self.background, (SCREEN_WIDTH, SCREEN_HEIGHT)), (0, 0))
-
-        # Draw the planet in the center
+        
+        # Draw planet in the center
         planet_scaled = pygame.transform.scale(
             self.planet, (int(self.planet.get_width() * 0.45), int(self.planet.get_height() * 0.45))
         )
         planet_rect = planet_scaled.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         surface.blit(planet_scaled, planet_rect)
-
-        # Draw the scaled "SARIAN" title sprite near the top center
+        
+        # Draw title sprite (remove any text, using only the image)
         title_rect = self.title_image.get_rect(center=(SCREEN_WIDTH // 2, 100))
         surface.blit(self.title_image, title_rect)
-
+        
         # Draw the play button
         play_scaled = pygame.transform.scale(self.play_button, (100, 100))
         self.play_button_rect = play_scaled.get_rect(center=(SCREEN_WIDTH // 2, 400))
@@ -217,8 +214,8 @@ class Shield:
         self.image = pygame.transform.scale(self.image, (new_w, new_h))
         self.rect = self.image.get_rect()
 
-        # Single bounding circle that approximates the shield's shape
-        shield_collision_factor = 0.47
+        # Single bounding circle approximating the shield's shape
+        shield_collision_factor = 0.47  # Tweak this to adjust collision accuracy
         self.collision_radius = (new_w / 2) * shield_collision_factor
 
     def rotate_left(self, speed):
@@ -258,9 +255,9 @@ class MainScene:
         self.pause_button = None
         self.dust_image = None
 
-        self.score = 0
-        self.high_score = 0
-        self.lives = 3
+        self.score = 0         # Current score (displayed as 1UP)
+        self.high_score = 0    # Highest score for the session
+        self.lives = 3         # Internal lives count (not displayed)
         self.is_paused = False
 
         self.planet_center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20)
@@ -285,9 +282,14 @@ class MainScene:
         self.dust_image = load_image("dust.png")
         self.font_small = pygame.font.SysFont("Arial", 20)
         self.font_big = pygame.font.SysFont("Arial", 40)
-
-        # If you have multiple moon images, load them here
-        # self.moon_images = [...]
+        # Load the 5 moon images
+        self.moon_images = [
+            load_image("moon1.png"),
+            load_image("moon2.png"),
+            load_image("moon3.png"),
+            load_image("moon4.png"),
+            load_image("moon5.png")
+        ]
 
     def start(self):
         self.score = 0
@@ -299,14 +301,27 @@ class MainScene:
                           int(self.planet.get_height() * 0.25))
         )
         self.planet_rect = self.planet_scaled.get_rect(center=self.planet_center)
-
         self.shield = Shield(self.shield_image, self.planet_center, radius=150, angle=100)
 
         self.asteroids.empty()
         self.dust_particles.empty()
         self.plus_ones.empty()
         self.moons.empty()
-        # If you have code to spawn moons, do it here...
+
+        # Define fixed orbits for 5 moons (radius, starting angle)
+        fixed_orbits = [
+            (190,   0),
+            (250,  72),
+            (320, 144),
+            (380, 216),
+            (450, 288)
+        ]
+        orbit_speed = 0.1
+        for i, img in enumerate(self.moon_images):
+            radius, angle = fixed_orbits[i]
+            scale = random.uniform(0.05, 0.09)
+            moon = Moon(img, self.planet_center, orbit_radius=radius, orbit_speed=orbit_speed, initial_angle=angle, scale=scale)
+            self.moons.add(moon)
 
         self.spawn_event = pygame.time.get_ticks()
 
@@ -381,12 +396,12 @@ class MainScene:
         self.asteroids.add(asteroid)
 
     def check_shield_collisions(self):
-        circles = self.shield.get_collision_circles()
+        circles = self.shield.get_collision_circles()  # returns [(cx, cy, r)]
         for asteroid in self.asteroids:
             for (cx, cy, cr) in circles:
                 dx = asteroid.rect.centerx - cx
                 dy = asteroid.rect.centery - cy
-                dist_sq = dx*dx + dy*dy
+                dist_sq = dx * dx + dy * dy
                 radius_sum = asteroid.radius + cr
                 if dist_sq <= (radius_sum * radius_sum):
                     self.handle_asteroid_blocked(asteroid)
@@ -416,7 +431,7 @@ class MainScene:
         for asteroid in self.asteroids:
             dx = asteroid.rect.centerx - px
             dy = asteroid.rect.centery - py
-            dist_sq = dx*dx + dy*dy
+            dist_sq = dx * dx + dy * dy
             radius_sum = asteroid.radius + planet_radius
             if dist_sq <= (radius_sum * radius_sum):
                 asteroid.kill()
