@@ -79,7 +79,7 @@ class TitleScene:
         
         # Load and scale the title sprite (title.png)
         self.title_image = load_image("title.png")
-        desired_width = 350  # Adjust this value to control the title image size
+        desired_width = 300  # Adjust this value to control the title image size
         original_width, original_height = self.title_image.get_size()
         aspect_ratio = original_height / original_width
         scaled_height = int(desired_width * aspect_ratio)
@@ -103,7 +103,7 @@ class TitleScene:
         
         # Draw planet in the center
         planet_scaled = pygame.transform.scale(
-            self.planet, (int(self.planet.get_width() * 0.45), int(self.planet.get_height() * 0.45))
+            self.planet, (int(self.planet.get_width() * 0.4), int(self.planet.get_height() * 0.4))
         )
         planet_rect = planet_scaled.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         surface.blit(planet_scaled, planet_rect)
