@@ -19,6 +19,8 @@ In the show _Mythic Quest_, Season 3, Episode 7 [**Sarian**](https://www.imdb.co
 
 [Gameplay from Show](assets/clipGif.gif)
 
+[Gameplay from my "pySARIAN"](assets/pyS_Gameplay.gif)
+
 This project aims to bring that concept to life with Python, using [Pygame](https://www.pygame.org/docs/). Since there is only ~9 seconds of actual gameplay shown in the episode, there was not a lot to work with. But I was up for the challenge, and had a ton of fun working on this. 
 
 I used Blender to create the moons and the planet. And I used a combo of GIMP and Freeform(mac) for any images. The planet it there now is a placeholder until I complete sculpting the actual main planet. It should be updated in the coming weeks. 
