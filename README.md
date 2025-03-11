@@ -17,6 +17,8 @@ A **Python/Pygame** recreation of the fictional game **Sarian** from Apple TV’
 ## About the Project
 In the show _Mythic Quest_, Season 3, Episode 7 [**Sarian**](https://www.imdb.com/title/tt21356646/?ref_=ttep_ep_7) is briefly shown as a fictional in-universe game. It's a game Ian had made in the 90's, that a young Poppy found while perusing the internet in the Melbourne-Seabrook Public Library. 
 
+[Gameplay from Show](assets/clipGif.gif)
+
 This project aims to bring that concept to life with Python, using [Pygame](https://www.pygame.org/docs/). Since there is only ~9 seconds of actual gameplay shown in the episode, there was not a lot to work with. But I was up for the challenge, and had a ton of fun working on this. 
 
 I used Blender to create the moons and the planet. And I used a combo of GIMP and Freeform(mac) for any images. The planet it there now is a placeholder until I complete sculpting the actual main planet. It should be updated in the coming weeks. 
